@@ -1,7 +1,6 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-const User = require('./models').User;
 
 //function to wrap each route in try/catch blocks. Saves time and coding space
 function asyncHandler(cb) {
