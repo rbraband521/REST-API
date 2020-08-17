@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
+const User = require('./models').User;
 
 //function to wrap each route in try/catch blocks. Saves time and coding space
 function asyncHandler(cb) {
@@ -16,7 +17,10 @@ function asyncHandler(cb) {
 const users = [];
 /*****Returns the currently authenticated user STATUS: 200 *****/
 router.get('/users', asyncHandler,(async(req, res) => {
-    res.json(users);
+    const user = await User.findAll({
+
+    });
+    res.json(user);
 }));
 
 /***** Creates a user, sets Location header to '/' and returns no content STATUS: 201 *****/
