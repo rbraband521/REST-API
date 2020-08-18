@@ -146,7 +146,7 @@ router.post('/courses',
     check('description')
         .exists()
         .withMessage('Please provide a value for "description"'),
-    ], 
+    ], authenticateUser,
     async (req, res) => {  
         const errors = validationResult(req);
         let course = req.body;

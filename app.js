@@ -31,7 +31,9 @@ app.use(morgan('dev'));
       const errors = error.errors.map(err => err.message);
       console.error('Validation errors: ', errors);
     } else {
-      throw error;
+      const err = new Error();
+      err.status = 500;
+      console.log('Sorry the server encountered an issue, code: ' + err.status);
     }
   }
 })();
