@@ -7,16 +7,16 @@ const User = require('./models').User;
 const Course = require('./models').Course;
 const { check, validationResult } = require('express-validator');
 
-//function to wrap each route in try/catch blocks. Saves time and coding space
-// function asyncHandler(cb) {
-//     return async(req, res, next) => {
-//         try{
-//             await cb(req, res, next)
-//         } catch(error){
-//             next(error);
-//           }
-//     }
-// }
+// function to wrap each route in try/catch blocks. Saves time and coding space
+function asyncHandler(cb) {
+    return async(req, res, next) => {
+        try{
+            await cb(req, res, next)
+        } catch(error){
+            next(error);
+          }
+    }
+}
 
 const authenticateUser = async (req, res, next) => {
     try {
@@ -165,7 +165,7 @@ router.post('/courses',
 );;
 
 /***** Updates a course, returns no content STATUS: 204 *****/
-router.put('/courses/:id', authenticateUser, async (req, res) => {
+router.put('/courses/:id', authenticateUser, (async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const errorMessages = errors.array().map(error => error.msg);
@@ -190,7 +190,7 @@ router.put('/courses/:id', authenticateUser, async (req, res) => {
     } else {
         res.status(403).json({ message: "Access Denied: You do not have proper authorization"});
     }
-});
+}));
 
 // if(course.userId !== req.currentUser.id) {
 //     res.status(403).json({message: "Access Denied"});
@@ -200,9 +200,21 @@ router.put('/courses/:id', authenticateUser, async (req, res) => {
 //     return res.status(400).json({ errors: errorMessages });
 
 /***** Deletes a course, returns no content STATUS: 204 *****/
-router.delete('/courses/:id', (req, res) => {
-
-});
+router.delete('/courses/:id', authenticateUser, asyncHandler (async(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const errorMessages = errors.array().map(error => error.msg);
+        return res.status(400).json({ errors: errorMessages });
+    }
+    const user = req.currentUser;
+    const course = await Course.findByPk(req.params.id);
+    if(course.userId === user.id) {
+        await course.destroy();
+        res.status(204).location('/').end()
+    } else {
+        res.status(403).json({ message: "Access Denied: You do not have proper authorization to perform this action" });
+    }
+}));
 
 
 module.exports = router;
