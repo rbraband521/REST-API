@@ -132,9 +132,37 @@ router.get('/courses/:id', async (req, res) => {
 });
 
 /***** Creates a course, sets the Location header to the URL for the course, and returns no content STATUS: 201 *****/
-router.post('/courses', (req, res) => {
-
-});
+router.post('/courses',
+//  [
+//     check('firstName')
+//         .exists()
+//         .withMessage('Please provide a value for "firstName"'),
+//     check('password')
+//         .exists()
+//         .withMessage('Please provide a value for "password"'),
+//     ], 
+    async (req, res) => {  
+        const errors = validationResult(req);
+        let course = req.body;
+        if (!errors.isEmpty()) {
+            const errorMessages = errors.array().map(error => error.msg);
+            return res.status(400).json({ errors: errorMessages });
+        } else {
+            try {
+                course = await Course.create( {
+                    userId: req.body.userId,
+                    title: req.body.title,
+                    description: req.body.description,
+                    estimatedTime: req.body.estimatedTime,
+                    materialsNeeded: req.body.materialsNeeded,
+                })
+                res.status(201).location('/').end();
+            } catch (error) {
+                res.status(500).json({ message: error.message });
+            }
+        }
+    }
+);;
 
 /***** Updates a course, returns no content STATUS: 204 *****/
 router.put('/courses/:id', (req, res) => {
