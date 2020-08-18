@@ -165,9 +165,39 @@ router.post('/courses',
 );;
 
 /***** Updates a course, returns no content STATUS: 204 *****/
-router.put('/courses/:id', (req, res) => {
-
+router.put('/courses/:id', authenticateUser, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const errorMessages = errors.array().map(error => error.msg);
+        return res.status(400).json({ errors: errorMessages });
+    }
+    const user = req.currentUser;
+    const course = await Course.findByPk(req.params.id);
+    console.log(course.userId);
+    if(course.userId === user.id) {
+        try {
+            await course.update({
+                userId: req.currentUser.id,
+                title: req.body.title,
+                description: req.body.description,
+                estimatedTime: req.body.estimatedTime,
+                materialsNeeded: req.body.materialsNeeded,
+            })
+            res.status(204).end();
+        } catch(error) {
+            res.status(400).json({ message: error.message });
+        }
+    } else {
+        res.status(403).json({ message: "Access Denied: You do not have proper authorization"});
+    }
 });
+
+// if(course.userId !== req.currentUser.id) {
+//     res.status(403).json({message: "Access Denied"});
+// }
+// if (!errors.isEmpty()) {
+//     const errorMessages = errors.array().map(error => error.msg);
+//     return res.status(400).json({ errors: errorMessages });
 
 /***** Deletes a course, returns no content STATUS: 204 *****/
 router.delete('/courses/:id', (req, res) => {
