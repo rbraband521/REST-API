@@ -90,7 +90,7 @@ router.post('/users', [
                     emailAddress: req.body.emailAddress,
                     password: bcryptjs.hashSync(req.body.password)
                 })
-                res.status(201).end();
+                res.status(201).location('/').end();
             } catch (error) {
                 res.status(500).json({ message: error.message });
             }
