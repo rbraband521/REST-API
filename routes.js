@@ -66,6 +66,12 @@ router.post('/users', [
     check('firstName')
         .exists()
         .withMessage('Please provide a value for "firstName"'),
+    check('lastName')
+        .exists()
+        .withMessage('Please provide a value for "lastName"'),
+    check('emailAddress')
+        .exists()
+        .withMessage('Please provide a value for "emailAddress"'),
     check('password')
         .exists()
         .withMessage('Please provide a value for "password"'),
@@ -133,14 +139,14 @@ router.get('/courses/:id', async (req, res) => {
 
 /***** Creates a course, sets the Location header to the URL for the course, and returns no content STATUS: 201 *****/
 router.post('/courses',
-//  [
-//     check('firstName')
-//         .exists()
-//         .withMessage('Please provide a value for "firstName"'),
-//     check('password')
-//         .exists()
-//         .withMessage('Please provide a value for "password"'),
-//     ], 
+ [
+    check('title')
+        .exists()
+        .withMessage('Please provide a value for "title"'),
+    check('description')
+        .exists()
+        .withMessage('Please provide a value for "description"'),
+    ], 
     async (req, res) => {  
         const errors = validationResult(req);
         let course = req.body;
@@ -165,7 +171,14 @@ router.post('/courses',
 );;
 
 /***** Updates a course, returns no content STATUS: 204 *****/
-router.put('/courses/:id', authenticateUser, (async (req, res) => {
+router.put('/courses/:id', [
+    check('title')
+        .exists()
+        .withMessage('Please provide a value for "title"'),
+    check('description')
+        .exists()
+        .withMessage('Please provide a value for "description"'),
+    ], authenticateUser, (async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const errorMessages = errors.array().map(error => error.msg);
@@ -191,13 +204,6 @@ router.put('/courses/:id', authenticateUser, (async (req, res) => {
         res.status(403).json({ message: "Access Denied: You do not have proper authorization"});
     }
 }));
-
-// if(course.userId !== req.currentUser.id) {
-//     res.status(403).json({message: "Access Denied"});
-// }
-// if (!errors.isEmpty()) {
-//     const errorMessages = errors.array().map(error => error.msg);
-//     return res.status(400).json({ errors: errorMessages });
 
 /***** Deletes a course, returns no content STATUS: 204 *****/
 router.delete('/courses/:id', authenticateUser, asyncHandler (async(req, res) => {
