@@ -4,18 +4,19 @@ const bcryptjs = require('bcryptjs');
 const auth = require('basic-auth');
 const router = express.Router();
 const User = require('./models').User;
+const Course = require('./models').Course;
 const { check, validationResult } = require('express-validator');
 
 //function to wrap each route in try/catch blocks. Saves time and coding space
-function asyncHandler(cb) {
-    return async(req, res, next) => {
-        try{
-            await cb(req, res, next)
-        } catch(error){
-            next(error);
-          }
-    }
-}
+// function asyncHandler(cb) {
+//     return async(req, res, next) => {
+//         try{
+//             await cb(req, res, next)
+//         } catch(error){
+//             next(error);
+//           }
+//     }
+// }
 
 const authenticateUser = async (req, res, next) => {
     try {
@@ -49,14 +50,7 @@ const authenticateUser = async (req, res, next) => {
     };
 };
 
-
-
-// const nameValidator = check('name')
-//   .exists({ checkNull: true, checkFalsy: true })
-//   .withMessage('Please provide a value for "name"');
-
 /*****USER ROUTES******/
-// const users = [];
 /*****Returns the currently authenticated user STATUS: 200 *****/
 router.get('/users', authenticateUser, (req, res) => {
     const user = req.currentUser;
@@ -101,8 +95,21 @@ router.post('/users', [
 /*****COURSE ROUTES*****/
 
 /***** Returns a list of courses(including the user that owns each course) STAUTS: 200 *****/
-router.get('/courses', (req, res) => {
-
+router.get('/courses', async (req, res) => {
+    try {
+    const courses = await Course.findAll({
+        include: {
+            model: User,
+            as: 'user',
+            attributes: ["id", "firstName", "lastName", "emailAddress" ]
+        },
+        attributes: ["id", "title", "description", "estimatedTime", "materialsNeeded"]
+    });
+    res.json(courses);
+    res.status(200).end();
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 /***** Returns  the course(including the user that owns the course) for the provided course ID STATUS: 200 *****/
