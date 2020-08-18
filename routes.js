@@ -17,10 +17,10 @@ function asyncHandler(cb) {
 const users = [];
 /*****Returns the currently authenticated user STATUS: 200 *****/
 router.get('/users', asyncHandler,(async(req, res) => {
-    const user = await User.findAll({
+    // const user = await User.findAll({
 
-    });
-    res.json(user);
+    // });
+    res.json(users);
 }));
 
 /***** Creates a user, sets Location header to '/' and returns no content STATUS: 201 *****/

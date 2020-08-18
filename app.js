@@ -15,7 +15,7 @@ const app = express();
 
 //middleware
 app.use(express.json());
-app.use('/api', routes);
+
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
@@ -37,7 +37,7 @@ app.use(morgan('dev'));
 })();
 
 // TODO setup your api routes here
-
+app.use('/api', routes);
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
   res.json({
