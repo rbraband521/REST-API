@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const bcryptjs = require('bcryptjs');
+const auth = require('basic-auth');
 const router = express.Router();
 const User = require('./models').User;
 const { check, validationResult } = require('express-validator');
@@ -16,45 +17,86 @@ function asyncHandler(cb) {
     }
 }
 
+const authenticateUser = async (req, res, next) => {
+    try {
+        let message = null;
+        const credentials = auth(req);
+        if (credentials) {
+            const allUsers = await User.findAll({ attributes: ['id','emailAddress', 'password']});
+            const user = allUsers.find( u => u.emailAddress === credentials.name);
+            if (user) {
+                const authenticated = bcryptjs 
+                    .compareSync(credentials.pass, user.password);
+                if (authenticated) {
+                    req.currentUser = user;
+                    } else {
+                        message = `Authentication failure for user email address: ${user.emailAddress}`;
+                    }
+                } else {
+                message = `User not found: ${credentials.name}`;
+            }
+        } else {
+            message = 'Auth header not found';
+        };
+        if (message) {
+            console.warn(message);
+            res.status(401).json({ message: "Access Denied" });
+        } else {
+            next();
+        };
+    } catch (error) {
+        throw error;
+    };
+};
 
 
-const nameValidator = check('name')
-  .exists({ checkNull: true, checkFalsy: true })
-  .withMessage('Please provide a value for "name"');
+
+// const nameValidator = check('name')
+//   .exists({ checkNull: true, checkFalsy: true })
+//   .withMessage('Please provide a value for "name"');
 
 /*****USER ROUTES******/
-const users = [];
+// const users = [];
 /*****Returns the currently authenticated user STATUS: 200 *****/
-router.get('/users', asyncHandler,(async(req, res) => {
-    res.json(users);
-}));
+router.get('/users', authenticateUser, (req, res) => {
+    const user = req.currentUser;
+
+    res.json({
+      Username: user.emailAddress,
+      password: user.password,
+    });
+});
 
 /***** Creates a user, sets Location header to '/' and returns no content STATUS: 201 *****/
 router.post('/users', [
-    check('name')
+    check('firstName')
         .exists()
-        .withMessage('Please provide a value for "name"'),
-    check('username')
-        .exists()
-        .withMessage('Please provide a value for "username"'),
+        .withMessage('Please provide a value for "firstName"'),
     check('password')
         .exists()
         .withMessage('Please provide a value for "password"'),
-    ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        const errorMessages = errors.array().map(error => error.msg);
-        return res.status(400).json({ errors: errorMessages });
+    ], async (req, res) => {  
+        const errors = validationResult(req);
+        let user;
+        if (!errors.isEmpty()) {
+            const errorMessages = errors.array().map(error => error.msg);
+            return res.status(400).json({ errors: errorMessages });
+        } else {
+            try {
+                user = await User.create( {
+                    id: null,
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName,
+                    emailAddress: req.body.emailAddress,
+                    password: bcryptjs.hashSync(req.body.password)
+                })
+                res.status(201).end();
+            } catch (error) {
+                res.status(500).json({ message: error.message });
+            }
+        }
     }
-    //Get the user from the request body
-    const user = req.body;
-    // Hash the new user's password.
-    user.password = bcryptjs.hashSync(user.password);
-    //Add the user to the 'users' array
-    users.push(user);
-    //Set the status to 201, created and end the response
-    res.status(201).end();
-});
+);
 
 /*****COURSE ROUTES*****/
 
