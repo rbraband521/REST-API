@@ -113,8 +113,22 @@ router.get('/courses', async (req, res) => {
 });
 
 /***** Returns  the course(including the user that owns the course) for the provided course ID STATUS: 200 *****/
-router.get('/courses/:id', (req, res) => {
-
+router.get('/courses/:id', async (req, res) => {
+    try {
+        const courseId = req.params.id;
+        const courses = await Course.findByPk(courseId, {
+            include: {
+                model: User,
+                as: 'user',
+                attributes: ["id", "firstName", "lastName", "emailAddress" ]
+            },
+            attributes: ["id", "title", "description", "estimatedTime", "materialsNeeded"]
+        });
+        res.json(courses);
+        res.status(200).end();
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
 });
 
 /***** Creates a course, sets the Location header to the URL for the course, and returns no content STATUS: 201 *****/
