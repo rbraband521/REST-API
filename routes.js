@@ -80,14 +80,14 @@ router.post('/users', [
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 const errorMessages = errors.array().map(error => error.msg);
-                return res.status(400).json({ errors: errorMessages });
+                return res.status(400).json({ message: error.message });
             }
         //access user from the request body
             let user = req.body;
             const users = await User.findAll({ attributes: ["emailAddress"] });
             const userEmails = users.map(user => user.emailAddress); 
             if (users.emailAdress === userEmails) {
-                return res.status(400).json({ error: "This email has an existing account"})
+                res.status(400).json({ message: "This email has an existing account"})
             } else {
                 user = await User.create( {
                     id: null,
