@@ -26,7 +26,7 @@ module.exports = (sequelize) => {
             allowNull: true,
         }
     }, { sequelize });
-//defining the relationship between both models. Each course has a single user
+//defining the relationship between both models. Each course has a single user.
     Course.associate = (models) => {
         Course.belongsTo(models.User, {
             as: 'user', //alias
