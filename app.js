@@ -13,7 +13,7 @@ const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'tr
 // create the Express app
 const app = express();
 
-//middleware
+//middleware that allows access to the body
 app.use(express.json());
 
 
@@ -27,20 +27,20 @@ app.use(morgan('dev'));
   console.log('Connection to the database successful!');
   await sequelize.authenticate();
   } catch(error) {
-    // if (error.name === 'SequelizeValidationError') {
-    //   const errors = error.errors.map(err => err.message);
-    //   console.error('Validation errors: ', errors);
-    // } else {
+    if (error.name === 'SequelizeValidationError') {
+      const errors = error.errors.map(err => err.message);
+      console.error('Validation errors: ', errors);
+    } else {
       const err = new Error();
       err.status = 500;
       console.log('Sorry the server encountered an issue, code: ' + err.status);
     }
   }
-)();
+})();
 
-// TODO setup your api routes here
+// api routes here
 app.use('/api', routes);
-// setup a friendly greeting for the root route
+//a friendly greeting for the root route
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to the REST API project!',
