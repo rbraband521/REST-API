@@ -17,20 +17,25 @@ function asyncHandler(cb) {
           }
     }
 }
-
+/**************USER AUTHENTICATION**************/
 const authenticateUser = async (req, res, next) => {
     try {
         let message = null;
         const credentials = auth(req);
         if (credentials) {
+            //finds all the users' id, emailAdress and password
             const allUsers = await User.findAll({ attributes: ['id','emailAddress', 'password']});
+            //matching the user to allUsers
             const user = allUsers.find( u => u.emailAddress === credentials.name);
+            //if a user is matched, compare the hashed passwords
             if (user) {
                 const authenticated = bcryptjs 
                     .compareSync(credentials.pass, user.password);
                 if (authenticated) {
+                    //display current user if a match
                     req.currentUser = user;
                     } else {
+                        //otherwise display one of these three errors depending on where the auth failed
                         message = `Authentication failure for user email address: ${user.emailAddress}`;
                     }
                 } else {
