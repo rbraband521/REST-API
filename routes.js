@@ -176,7 +176,9 @@ router.post('/courses',
                     estimatedTime: req.body.estimatedTime,
                     materialsNeeded: req.body.materialsNeeded,
                 })
-                res.status(201).location('/').end();
+                const courseId = course.id;
+                console.log(courseId);
+                res.status(201).location(`/courses/${courseId}`).end();
             } catch (error) {
                 res.status(500).json({ message: error.message });
             }
