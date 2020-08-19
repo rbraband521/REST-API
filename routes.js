@@ -75,14 +75,20 @@ router.post('/users', [
     check('password')
         .exists()
         .withMessage('Please provide a value for "password"'),
-    ], async (req, res) => {  
-        const errors = validationResult(req);
-        let user;
-        if (!errors.isEmpty()) {
-            const errorMessages = errors.array().map(error => error.msg);
-            return res.status(400).json({ errors: errorMessages });
-        } else {
-            try {
+    ], (async (req, res) => {  
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                const errorMessages = errors.array().map(error => error.msg);
+                return res.status(400).json({ errors: errorMessages });
+            }
+        //access user from the request body
+            let user = req.body;
+            const users = await User.findAll({ attributes: ["emailAddress"] });
+            const userEmails = users.map(user => user.emailAddress); 
+            if (users.emailAdress === userEmails) {
+                return res.status(400).json({ error: "This email has an existing account"})
+            } else {
                 user = await User.create( {
                     id: null,
                     firstName: req.body.firstName,
@@ -91,12 +97,12 @@ router.post('/users', [
                     password: bcryptjs.hashSync(req.body.password)
                 })
                 res.status(201).location('/').end();
+            }  
             } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
+            res.status(500).json({ message: "is this the message?" });
         }
     }
-);
+));
 
 /*****COURSE ROUTES*****/
 
