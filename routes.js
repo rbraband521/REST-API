@@ -76,19 +76,22 @@ router.post('/users', [
         .exists()
         .withMessage('Please provide a value for "password"'),
     ], (async (req, res) => {  
-        try {
+        
+            let user;
             const errors = validationResult(req);
+            try{
             if (!errors.isEmpty()) {
                 const errorMessages = errors.array().map(error => error.msg);
-                return res.status(400).json({ message: error.message });
+                return res.status(400).json({ message: errorMessages });
             }
         //access user from the request body
-            let user = req.body;
-            const users = await User.findAll({ attributes: ["emailAddress"] });
-            const userEmails = users.map(user => user.emailAddress); 
-            if (users.emailAdress === userEmails) {
-                res.status(400).json({ message: "This email has an existing account"})
-            } else {
+            // let user = req.body;
+            // const users = await User.findAll({ attributes: ["emailAddress"] });
+            // const userEmails = users.map(user => user.emailAddress); 
+            // if (users.emailAdress === userEmails) {
+            //     res.status(400).json({ message: "This email has an existing account"})
+            // } 
+            else {
                 user = await User.create( {
                     id: null,
                     firstName: req.body.firstName,
@@ -99,7 +102,7 @@ router.post('/users', [
                 res.status(201).location('/').end();
             }  
             } catch (error) {
-            res.status(500).json({ message: "is this the message?" });
+            res.status(500).json({ message: error.message });
         }
     }
 ));
