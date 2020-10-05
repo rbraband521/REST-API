@@ -80,36 +80,31 @@ router.post('/users', [
     check('password')
         .exists()
         .withMessage('Please provide a value for "password"'),
-    ], (async (req, res) => {  
-        
-            let user;
-            const errors = validationResult(req);
-            try{
-            if (!errors.isEmpty()) {
-                const errorMessages = errors.array().map(error => error.msg);
-                return res.status(400).json({ message: errorMessages });
+    ], (async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const errorMessages = errors.array().map(error => error.msg);
+            return res.status(400).json({ message: errorMessages });
             }
-        //access user from the request body
-            // let user = req.body;
-            // const users = await User.findAll({ attributes: ["emailAddress"] });
-            // const userEmails = users.map(user => user.emailAddress); 
-            // if (users.emailAdress === userEmails) {
-            //     res.status(400).json({ message: "This email has an existing account"})
-            // } 
-            else {
-                user = await User.create( {
-                    id: null,
-                    firstName: req.body.firstName,
-                    lastName: req.body.lastName,
-                    emailAddress: req.body.emailAddress,
-                    password: bcryptjs.hashSync(req.body.password)
-                })
-                res.status(201).location('/').end();
-            }  
-            } catch (error) {
-            res.status(500).json({ message: error.message });
+        try{
+            let user;
+            user = await User.create( {
+                id: null,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                emailAddress: req.body.emailAddress,
+                password: bcryptjs.hashSync(req.body.password)
+            })
+            res.status(201).location('/').end();
+            }catch(error) {
+                if (error.name === 'SequelizeUniqueConstraintError') {
+                  const errors = error.errors.map(err => err.message);
+                  res.status(400).json({ message: "Sorry, this email has an existing account"});
+                } else {
+                  throw error;
+                }
+            }
         }
-    }
 ));
 
 /*****COURSE ROUTES*****/
